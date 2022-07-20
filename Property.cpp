@@ -25,9 +25,9 @@ vector<string> split(string str, string token){
 }
 
 #define startsWith(aVar, bVar) aVar.rfind(bVar, 0) == 0
-#define stringFrom(str, start) str.substr(start, attr.size()-start)
+#define stringFrom(str, start) str.substr(start, str.size()-start)
 
-Property::Property(string& name, string& attrString) : m_name(name), m_attrString(attrString)
+Property::Property(const string& name, const string& attrString) : m_name(name), m_attrString(attrString)
 {
     map<string, string> attributeEncodings = {
             {"&", "retain"},
@@ -43,8 +43,8 @@ Property::Property(string& name, string& attrString) : m_name(name), m_attrStrin
         if (startsWith(attr, 'T')) // Type Field
         {
             m_typeString = stringFrom(attr, 1);
-            EncodedType propType = TypeProcessor::Instance()->ProcessTypes(m_typeString).front();
-            m_renderedType = propType.GetRendered();
+            EncodedType* propType = TypeProcessor::Instance()->ProcessTypes(m_typeString).front();
+            m_renderedType = propType->GetRendered();
         }
         else if (startsWith(attr, 'V'))
         {

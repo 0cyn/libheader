@@ -9,18 +9,18 @@
 vector<string> split(string str, string token);
 
 
-Method::Method(string& selector, string& typeString, bool belongsToMetaClass) : m_selector(selector),
+Method::Method(const string& selector, const string& typeString, bool belongsToMetaClass) : m_selector(selector),
                                                                                 m_typeString(typeString),
                                                                                 m_belongsToMetaClass(belongsToMetaClass)
 {
     m_types = TypeProcessor::Instance()->ProcessTypes(m_typeString);
 
-    m_returnType = m_types.at(0).GetRendered();
+    m_returnType = m_types.at(0)->GetRendered();
     int i = 0;
-    for (EncodedType type : m_types)
+    for (EncodedType* type : m_types)
     {
         if (i == 0) { i++; continue; }
-        m_argumentTypes.push_back(type.GetRendered());
+        m_argumentTypes.push_back(type->GetRendered());
     }
 
 }

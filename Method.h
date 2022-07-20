@@ -24,10 +24,10 @@ private:
     string m_returnType;
     vector<string> m_argumentTypes; // FIRST TWO ARE SELF + CMD!
 
-    vector<EncodedType> m_types;
+    vector<EncodedType*> m_types;
 
 public:
-    Method(string& selector, string& typeString, bool belongsToMetaClass);
+    Method(const string& selector, const string& typeString, bool belongsToMetaClass);
     ~Method();
 
     string GetRendered();

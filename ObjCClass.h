@@ -19,19 +19,26 @@
 using namespace std;
 
 class ObjCClass {
-private:
+    Interface* m_interface;
+public:
     string m_name;
     optional<string> m_superclassName;
     vector<string> m_protocolNames;
-
     vector<Method*> m_instanceMethods;
     vector<Method*> m_classMethods;
     vector<Property*> m_properties;
     vector<Ivar*> m_ivars;
-public:
-    void AddIvar(string name, string attr);
-    void AddMethod(string sel, string attr, bool isMeta);
-    void AddProperty(string name, string attr);
+
+    explicit ObjCClass(string& name);
+    ~ObjCClass();
+
+    void SetSuperclass(string superclassName) { m_superclassName = superclassName; };
+
+    void AddProtocolName(const string& protocolName);
+
+    void AddIvar(const string& name, const string& attr);
+    void AddMethod(const string& sel, const string& attr, bool isClassMethod);
+    void AddProperty(const string& name, const string& attr);
 
     Interface* RenderedInterface();
 };

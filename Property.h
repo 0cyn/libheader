@@ -40,7 +40,7 @@ private:
     string m_renderedType;
 
 public:
-    Property(string& name, string& attrString);
+    Property(const string& name, const string& attrString);
     ~Property();
 
     string GetRendered();

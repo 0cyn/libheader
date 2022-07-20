@@ -9,11 +9,11 @@
 
 Ivar::Ivar(string name, string typeString) : m_name(std::move(name)), m_typeString(std::move(typeString))
 {
-    EncodedType ivarType = TypeProcessor::Instance()->ProcessTypes(m_typeString).front();
+    EncodedType* ivarType = TypeProcessor::Instance()->ProcessTypes(m_typeString).front();
 
-    m_isClassType = (ivarType.GetType() != StructEncodedTypeType && ivarType.GetType() != NormalEncodedTypeType);
+    m_isClassType = (ivarType->GetType() != StructEncodedTypeType && ivarType->GetType() != NormalEncodedTypeType);
 
-    m_renderedType = ivarType.GetRendered();
+    m_renderedType = ivarType->GetRendered();
 }
 
 Ivar::~Ivar() = default;

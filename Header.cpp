@@ -88,60 +88,91 @@ vector<string> splitUntilLimit(string str, string token, int limit)
 Interface::Interface(ObjCClass *objCClass) : m_class(objCClass)
 {
     string rendered;
+    string renderedHTML;
 
     rendered.append("@interface ");
+    renderedHTML.append(R"(<div class="builtin-fg">@interface</div> )");
     rendered.append(m_class->m_name);
+    renderedHTML.append(R"(<div class="name">)" + m_class->m_name + "</div>");
     rendered.append(" : ");
+    renderedHTML.append(" <div class=\"builtin-bg\">:</div> ");
 
     if (m_class->m_superclassName.has_value())
+    {
         rendered.append(m_class->m_superclassName.value());
+        renderedHTML.append(R"(<div class="type">)" + m_class->m_superclassName.value() + "</div>");
+    }
     else
+    {
         rendered.append("NSObject");
-
+        renderedHTML.append(R"(<div class="type">NSObject</div>)");
+    }
     if (!m_class->m_ivars.empty())
     {
         rendered.append(" {\n");
+        renderedHTML.append( " <div class=\"builtin-bg\">{</div>\n\n");
         for (auto &ivar: m_class->m_ivars)
         {
             rendered.append("\t" + ivar->GetRendered());
+            renderedHTML.append("\t" + ivar->GetRenderedHTML());
             rendered.append(";\n");
+            renderedHTML.append(HTML_SEMICOLON + "\n\n");
         }
         rendered.append("}\n");
-    } else
+        renderedHTML.append("<div class=\"builtin-bg\">}</div>\n\n");
+    }
+    else
+    {
         rendered.append(" \n");
+        renderedHTML.append(" \n\n");
+    }
+
 
     if (!m_class->m_properties.empty())
     {
         rendered.append("\n");
+        renderedHTML.append("\n\n");
         for (auto &prop: m_class->m_properties)
         {
             rendered.append(prop->GetRendered());
+            renderedHTML.append(prop->GetRenderedHTML());
             rendered.append(";\n");
+            renderedHTML.append(HTML_SEMICOLON + "\n\n");
         }
         rendered.append("\n");
+        renderedHTML.append("\n\n");
     }
 
     if (!(m_class->m_instanceMethods.empty() && m_class->m_classMethods.empty()))
     {
         rendered.append("\n");
+        renderedHTML.append("\n\n");
         for (auto &meth: m_class->m_instanceMethods)
         {
             rendered.append(meth->GetRendered());
+            renderedHTML.append(meth->GetRenderedHTML());
             rendered.append(";\n");
+            renderedHTML.append(HTML_SEMICOLON + "\n\n");
         }
         for (auto &meth: m_class->m_classMethods)
         {
             rendered.append(meth->GetRendered());
+            renderedHTML.append(meth->GetRenderedHTML());
             rendered.append(";\n");
+            renderedHTML.append(HTML_SEMICOLON + "\n\n");
         }
         rendered.append("\n");
+        renderedHTML.append("\n\n");
     }
 
     rendered.append("\n");
+    renderedHTML.append("\n\n");
 
     rendered.append("@end");
+    renderedHTML.append(R"(<div class="builtin-fg">@end</div> )");
 
     m_rendered = rendered;
+    m_renderedHTML = renderedHTML;
 }
 
 
@@ -166,6 +197,24 @@ string Ivar::GetRendered()
     if (m_isClassType)
         rendered.append("*");
     rendered.append(m_name);
+
+    return rendered;
+}
+
+string Ivar::GetRenderedHTML()
+{
+    string rendered;
+
+    if (m_renderedType.rfind('<', 0) == 0)
+    {
+        rendered.append("<div class=\"type\">NSObject</div>");
+        rendered.append(R"(<div class="builtin-bg">&lt;</div><div class="type">)" + stringSlice(m_renderedType, 1, 1) + "</div><div class=\"builtin-bg\">&gt;</div> ");
+    }
+    else
+        rendered.append(R"(<div class="type">)" + m_renderedType + "</div> ");
+    if (m_isClassType)
+        rendered.append("<div class=\"builtin-bg\">*</div>");
+    rendered.append("<div class=\"name\">" + m_name + "</div>");
 
     return rendered;
 }
@@ -209,6 +258,34 @@ string Method::GetRendered() {
             rendered.append(selSlot + ":(" + m_argumentTypes[i + 2] + ")arg" + std::to_string(i) + " ");
         else
             rendered.append(selSlot);
+        i++;
+    }
+
+    return rendered;
+}
+
+
+string Method::GetRenderedHTML()
+{
+    string rendered;
+    rendered.append(m_belongsToMetaClass ? "<div class=\"builtin-bg\">+</div>" : "<div class=\"builtin-bg\">-</div>");
+    rendered.append(R"(<div class="builtin-bg">(</div><div class="type">)" + m_returnType + "</div><div class=\"builtin-bg\">)</div>");
+
+    if (m_argumentTypes.size() <= 2)
+    {
+        rendered.append("<div class=\"name\">" + m_selector + "</div>");
+        return rendered;
+    }
+
+    vector<string> selSlots = split(m_selector, ":");
+
+    int i = 0;
+    for (string &selSlot: selSlots)
+    {
+        if (m_argumentTypes.size() > i + 2)
+            rendered.append("<div class=\"name\">" + selSlot + R"(</div><div class="name">:(</div><div class="type">)" + m_argumentTypes[i + 2] + "</div><div class=\"name\">)arg" + std::to_string(i) + "</div> ");
+        else
+            rendered.append("<div class=\"name\">" + selSlot + "</div>");
         i++;
     }
 
@@ -322,6 +399,40 @@ string Property::GetRendered()
     rendered.append(m_name);
 
     return rendered;
+}
+
+string Property::GetRenderedHTML() {
+
+    string rendered = "<div class=\"builtin-fg\">@property</div> ";
+
+    if (!m_attributes.empty())
+    {
+        rendered.append("<div class=\"builtin_bg\">(</div>");
+        int i = 0;
+        int max = m_attributes.size() - 1;
+        for (string &attr: m_attributes)
+        {
+            rendered.append("<div class=\"builtin-fg\">" + attr + "</div>");
+            if (i != max)
+                rendered.append("<div class=\"builtin-bg\">,</div> ");
+            i++;
+        }
+        rendered.append("<div class=\"builtin_bg\">)</div> ");
+    }
+
+    if (m_renderedType.rfind('<', 0) == 0)
+    {
+        rendered.append("<div class=\"type\">NSObject</div>");
+        rendered.append(R"(<div class="builtin-bg">&lt;</div><div class="type">)" + stringSlice(m_renderedType, 1, 1) + "</div><div class=\"builtin-bg\">&gt;</div> ");
+    }
+    else
+        rendered.append(R"(<div class="type">)" + m_renderedType + "</div> ");
+    if (m_isClassType)
+        rendered.append("<div class=\"builtin-bg\">*</div>");
+    rendered.append("<div class=\"name\">" + m_name + "</div>");
+
+    return rendered;
+
 }
 
 Property::~Property() = default;

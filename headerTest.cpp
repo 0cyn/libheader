@@ -29,4 +29,9 @@ int main()
 
     auto prop = new Property("testPropertyThree", "TB,R,V_testPropertyThree");
     printf("%s;\n", prop->GetRendered().c_str());
+
+    // Render Qt compatible HTML
+
+    auto h = oclass->Interface()->GetRenderedHTML();
+    printf("%s\n", h.c_str());
 }

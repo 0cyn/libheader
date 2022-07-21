@@ -19,6 +19,8 @@
 #define stringSlice(str, startOffset, endOffset) str.substr(startOffset, str.size()-endOffset)
 #define elif else if
 
+#define HTML_SEMICOLON string("<div class=\"builtin-bg\">;</div>")
+
 
 
 using namespace std;
@@ -38,9 +40,11 @@ namespace HeaderParser
     private:
         ObjCClass* m_class;
         std::string m_rendered;
+        std::string m_renderedHTML;
     public:
         explicit Interface(ObjCClass *objCClass);
         std::string GetRendered() const { return m_rendered; };
+        std::string GetRenderedHTML() const { return m_renderedHTML; };
     };
 
     class Ivar {
@@ -55,6 +59,7 @@ namespace HeaderParser
         ~Ivar();
 
         string GetRendered();
+        string GetRenderedHTML();
     };
 
     class EncodedType;
@@ -76,6 +81,7 @@ namespace HeaderParser
         ~Method();
 
         string GetRendered();
+        string GetRenderedHTML();
     };
 
     class ObjCClass {
@@ -125,6 +131,7 @@ namespace HeaderParser
         ~Property();
 
         string GetRendered();
+        string GetRenderedHTML();
     };
 
     enum EncodedTypeType { // sorry lazily avoiding naming conflicts
